@@ -1,0 +1,2 @@
+[2024-02-24 19:45:05] generating states for 0
+[2024-02-24 19:45:05] Generating states in data/singly_capped_ace/S
