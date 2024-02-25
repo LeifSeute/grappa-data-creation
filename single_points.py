@@ -59,6 +59,9 @@ def calc_states(pdb_folder, n_states=None, memory=32, num_threads=4, skip_if_bus
             log(f"skipping {pdb_folder.stem}, already (partially) calculated")
             raise AlreadyBusy(f"skipping {pdb_folder.stem}, already (partially) calculated")
 
+    np.save(str(pdb_folder/Path("psi4_energies.npy")), np.array([]))
+    np.save(str(pdb_folder/Path("psi4_forces.npy")), np.array([]))
+
     positions = np.load(str(pdb_folder/Path("positions.npy")))
     atomic_numbers = np.load(str(pdb_folder/Path("atomic_numbers.npy")))
     
@@ -88,7 +91,10 @@ def calc_states(pdb_folder, n_states=None, memory=32, num_threads=4, skip_if_bus
 
     # load if present:
     if (pdb_folder/Path("psi4_energies.npy")).exists() and (pdb_folder/Path("psi4_forces.npy")).exists():
-        psi4_energies = [e for e in np.load(str(pdb_folder/Path("psi4_energies.npy")))]
+        if len(np.load(str(pdb_folder/Path("psi4_energies.npy")))) > 0:
+            psi4_energies = [e for e in np.load(str(pdb_folder/Path("psi4_energies.npy")))]
+        
+        if len(np.load(str(pdb_folder/Path("psi4_forces.npy")))) > 0:
         psi4_forces = [f for f in np.load(str(pdb_folder/Path("psi4_forces.npy")))]
         
 
