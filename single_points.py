@@ -95,7 +95,7 @@ def calc_states(pdb_folder, n_states=None, memory=32, num_threads=4, skip_if_bus
             psi4_energies = [e for e in np.load(str(pdb_folder/Path("psi4_energies.npy")))]
         
         if len(np.load(str(pdb_folder/Path("psi4_forces.npy")))) > 0:
-        psi4_forces = [f for f in np.load(str(pdb_folder/Path("psi4_forces.npy")))]
+            psi4_forces = [f for f in np.load(str(pdb_folder/Path("psi4_forces.npy")))]
         
 
     from time import time
