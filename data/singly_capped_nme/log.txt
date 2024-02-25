@@ -38,3 +38,90 @@
 [2024-02-24 19:43:32] Generating states in data/singly_capped_nme/W
 [2024-02-24 19:44:16] generating states for 19
 [2024-02-24 19:44:16] Generating states in data/singly_capped_nme/F
+[2024-02-25 10:32:37] calculating states for 20 folders in a first iteration.
+[2024-02-25 10:32:37] 
+[2024-02-25 10:32:37] calculating states for 0
+[2024-02-25 10:32:37] calculating 50 states using the config
+
+[2024-02-25 10:32:37] 	METHOD: bmk
+[2024-02-25 10:32:37] 	BASIS: 6-311+G(2df,p)
+[2024-02-25 10:32:37] 	MEMORY: 32GB
+[2024-02-25 10:32:37] 	NUM_THREADS: 2
+[2024-02-25 10:32:37] 	total_charge: 1
+[2024-02-25 10:32:37] 	multiplicity: 1
+[2024-02-25 10:32:37] calculating state number 0/49... Progress: 0/49, time elapsed: 0.0 min
+[2024-02-25 10:34:36] calculating state number 1/49... Progress: 1/49, time elapsed: 1.98 min, avg time per state: 1.98 min
+[2024-02-25 10:36:25] calculating state number 2/49... Progress: 2/49, time elapsed: 3.8 min, avg time per state: 1.9 min
+[2024-02-25 10:38:12] calculating state number 3/49... Progress: 3/49, time elapsed: 5.58 min, avg time per state: 1.86 min
+[2024-02-25 10:40:00] calculating state number 4/49... Progress: 4/49, time elapsed: 7.38 min, avg time per state: 1.85 min
+[2024-02-25 10:41:48] calculating state number 5/49... Progress: 5/49, time elapsed: 9.18 min, avg time per state: 1.84 min
+[2024-02-25 10:43:37] calculating state number 6/49... Progress: 6/49, time elapsed: 11.01 min, avg time per state: 1.83 min
+[2024-02-25 10:45:25] calculating state number 7/49... Progress: 7/49, time elapsed: 12.81 min, avg time per state: 1.83 min
+[2024-02-25 10:47:14] calculating state number 8/49... Progress: 8/49, time elapsed: 14.61 min, avg time per state: 1.83 min
+[2024-02-25 10:49:03] calculating state number 9/49... Progress: 9/49, time elapsed: 16.43 min, avg time per state: 1.83 min
+[2024-02-25 10:50:53] calculating state number 10/49... Progress: 10/49, time elapsed: 18.26 min, avg time per state: 1.83 min
+[2024-02-25 10:53:00] calculating states for 20 folders in a first iteration.
+[2024-02-25 10:53:00] 
+[2024-02-25 10:53:00] calculating states for 0, C...
+[2024-02-25 10:53:00] skipping C, already (partially) calculated
+[2024-02-25 10:53:00] 
+[2024-02-25 10:53:00] calculating states for 1, W...
+[2024-02-25 10:53:00] calculating 50 states using the config
+
+[2024-02-25 10:53:00] 	METHOD: bmk
+[2024-02-25 10:53:00] 	BASIS: 6-311+G(2df,p)
+[2024-02-25 10:53:00] 	MEMORY: 32GB
+[2024-02-25 10:53:00] 	NUM_THREADS: 4
+[2024-02-25 10:53:00] 	total_charge: 1
+[2024-02-25 10:53:00] 	multiplicity: 1
+[2024-02-25 10:53:00] calculating state number 0/49... Progress: 0/49, time elapsed: 0.0 min
+[2024-02-25 10:55:24] calculating states for 20 folders in a first iteration.
+[2024-02-25 10:55:24] 
+[2024-02-25 10:55:24] calculating states for 0, C...
+[2024-02-25 10:55:24] calculating 50 states using the config
+
+[2024-02-25 10:55:24] 	METHOD: bmk
+[2024-02-25 10:55:24] 	BASIS: 6-311+G(2df,p)
+[2024-02-25 10:55:24] 	MEMORY: 32GB
+[2024-02-25 10:55:24] 	NUM_THREADS: 4
+[2024-02-25 10:55:24] 	total_charge: 1
+[2024-02-25 10:55:24] 	multiplicity: 1
+[2024-02-25 10:55:24] calculating state number 0/49... Progress: 0/49, time elapsed: 0.0 min
+[2024-02-25 10:56:32] calculating state number 1/49... Progress: 1/49, time elapsed: 1.13 min, avg time per state: 1.13 min
+[2024-02-25 10:57:39] calculating state number 2/49... Progress: 2/49, time elapsed: 2.25 min, avg time per state: 1.13 min
+[2024-02-25 10:59:43] calculating states for 20 folders in a first iteration.
+[2024-02-25 10:59:43] 
+[2024-02-25 10:59:43] calculating states for 0, C...
+[2024-02-25 10:59:43] skipping C, already (partially) calculated
+[2024-02-25 10:59:43] 
+[2024-02-25 10:59:43] calculating states for 1, W...
+[2024-02-25 10:59:43] calculating 50 states using the config
+
+[2024-02-25 10:59:43] 	METHOD: bmk
+[2024-02-25 10:59:43] 	BASIS: 6-311+G(2df,p)
+[2024-02-25 10:59:43] 	MEMORY: 32GB
+[2024-02-25 10:59:43] 	NUM_THREADS: 8
+[2024-02-25 10:59:43] 	total_charge: 1
+[2024-02-25 10:59:43] 	multiplicity: 1
+[2024-02-25 10:59:43] calculating state number 0/49... Progress: 0/49, time elapsed: 0.0 min
+[2024-02-25 11:00:25] calculating states for 20 folders in a first iteration.
+[2024-02-25 11:00:25] 
+[2024-02-25 11:00:25] calculating states for 0, C...
+[2024-02-25 11:00:25] calculating 50 states using the config
+
+[2024-02-25 11:00:25] 	METHOD: bmk
+[2024-02-25 11:00:25] 	BASIS: 6-311+G(2df,p)
+[2024-02-25 11:00:25] 	MEMORY: 32GB
+[2024-02-25 11:00:25] 	NUM_THREADS: 8
+[2024-02-25 11:00:25] 	total_charge: 1
+[2024-02-25 11:00:25] 	multiplicity: 1
+[2024-02-25 11:00:25] calculating state number 0/49... Progress: 0/49, time elapsed: 0.0 min
+[2024-02-25 11:01:09] calculating state number 1/49... Progress: 1/49, time elapsed: 0.73 min, avg time per state: 0.73 min
+[2024-02-25 11:01:51] calculating state number 2/49... Progress: 2/49, time elapsed: 1.42 min, avg time per state: 0.71 min
+[2024-02-25 11:02:31] calculating state number 3/49... Progress: 3/49, time elapsed: 2.1 min, avg time per state: 0.7 min
+[2024-02-25 11:03:13] calculating state number 4/49... Progress: 4/49, time elapsed: 2.79 min, avg time per state: 0.7 min
+[2024-02-25 11:03:54] calculating state number 5/49... Progress: 5/49, time elapsed: 3.48 min, avg time per state: 0.7 min
+[2024-02-25 11:04:36] calculating state number 6/49... Progress: 6/49, time elapsed: 4.18 min, avg time per state: 0.7 min
+[2024-02-25 11:05:17] calculating state number 7/49... Progress: 7/49, time elapsed: 4.86 min, avg time per state: 0.69 min
+[2024-02-25 11:05:58] calculating state number 8/49... Progress: 8/49, time elapsed: 5.55 min, avg time per state: 0.69 min
+[2024-02-25 11:06:40] calculating state number 9/49... Progress: 9/49, time elapsed: 6.24 min, avg time per state: 0.69 min

@@ -48,10 +48,11 @@ import argparse
 parser = argparse.ArgumentParser(description='Merge uncapped datasets.')
 parser.add_argument('--full', action='store_true', help='Merge the full dataset.')
 parser.add_argument('--prepare', action='store_true', help='Pre merge, where we merge the dipeptides and the mono peptides separately.')
+parser.add_argument('--full_from_prepared', action='store_true', help='Merge the full dataset.')
 
 args = parser.parse_args()
 
-assert not (args.full == args.prepare), "Only one of --full or --prepare can be set."
+assert not sum([args.full, args.prepare, args.full_from_prepared]) > 1, "Only one of --full, --prepare, --full_from_prepared can be True."
 
 data_folder = Path(__file__).parent/'data'
 
@@ -59,7 +60,6 @@ ace_rule = lambda name: 'B'+name
 nme_rule = lambda name: name+'Z'
 
 if args.prepare:
-
 
     target_folder1 = data_folder/'uncapped_monopeptides'
     target_folder2 = data_folder/'uncapped_dipeptides'
@@ -78,7 +78,7 @@ if args.prepare:
     check_dataset_full(target_folder1)
     check_dataset_full(target_folder2)
 
-else:
+elif args.full_from_prepared:
     # now merge the two prepared datasets, using FILENAMES + ['psi4_energies.npy', 'psi4_forces.npy']
 
     target_folder = data_folder/'uncapped_dataset'
@@ -90,4 +90,17 @@ else:
         add_to_ds(source_folder, target_folder, skip_existing=True, filenames=FILENAMES+['psi4_energies.npy', 'psi4_forces.npy'])
 
     check_dataset_full(target_folder, filenames=FILENAMES+['psi4_energies.npy', 'psi4_forces.npy'])
-    
+
+elif args.full:
+    # merge the full dataset from the source folders, using FILENAMES
+    target_folder = data_folder/'uncapped_dataset'
+    target_folder.mkdir(exist_ok=True, parents=True)
+
+    source_folders = [data_folder/'singly_capped_ace', data_folder/'singly_capped_nme', data_folder/'dipep_ace_singly_capped', data_folder/'dipep_nme_singly_capped']
+
+    rules = [ace_rule, nme_rule, ace_rule, nme_rule]
+
+    for source_folder, rule in zip(source_folders, rules):
+        add_to_ds(source_folder, target_folder, skip_existing=True, filenames=FILENAMES, molname_rule=rule)
+
+    check_dataset_full(target_folder)

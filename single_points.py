@@ -165,7 +165,11 @@ def calc_all_states(folder, n_states=None, skip_errs=False, memory=32, num_threa
 
     log = Logger(Path(folder), print_to_screen=True)
 
-
+    # if the folder itself contains the files, calculate them:
+    if (Path(folder)/"positions.npy").exists():
+        print(f"calculating states for {Path(folder).stem}...")
+        calc_states(folder, n_states=n_states, memory=memory, num_threads=num_threads, skip_if_busy=False)
+        return
 
     # iterate once with skip_if_busy=False and once with skip_if_busy=True (to finished the calculations that were potentially interrupted)
     for skip_if_busy in is_cleanup_run:
@@ -173,13 +177,14 @@ def calc_all_states(folder, n_states=None, skip_errs=False, memory=32, num_threa
         skip_if_busy = not bool(skip_if_busy)
 
         # also recalculate the folders in case something was added
+
         pdb_folders = [f for f in Path(folder).iterdir() if f.is_dir()]
         random.shuffle(pdb_folders)
         log(f"calculating states for {len(pdb_folders)} folders in a first iteration.")
 
         for i, pdb_folder in enumerate(pdb_folders):
             log("")
-            log(f"calculating states for {i}")
+            log(f"calculating states for {i}, {Path(pdb_folder).stem}...")
             try:
                 calc_states(pdb_folder, n_states=n_states, memory=memory, num_threads=num_threads, skip_if_busy=skip_if_busy)
             except KeyboardInterrupt:
@@ -198,10 +203,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Calculates states for a given folder.')
     parser.add_argument('folder', type=str, help='The folder containing the PDB files.')
     parser.add_argument('--n_states', '-n', type=int, help='The number of states to calculate.', default=None)
-    parser.add_argument('--skip_errs', '-s', action='store_true', help='Skip errors.', default=True)
+    parser.add_argument('--skip_errs', '-s', action='store_true', help='Skip errors.', default=False)
     parser.add_argument('--permute_seed', '-p', type=int, help='The seed to use for shuffling the folders.', default=None)
     parser.add_argument('--memory', '-m', type=int, help='The amount of memory to use.', default=32)
     parser.add_argument('--num_threads', '-t', type=int, help='The number of threads to use.', default=4)
-    parser.add_argument('--cleanup_runs', '-c', type=bool, nargs='+', help='If True, the function will skip the folders where a calculation has already been started.', default=[False, True])
+    parser.add_argument('--cleanup_runs', '-c', type=bool, nargs='+', help='If True, the function will skip the folders where a calculation has already been started.', default=[False, True, True])
     args = parser.parse_args()
     calc_all_states(folder=args.folder, n_states=args.n_states, skip_errs=args.skip_errs, memory=args.memory, num_threads=args.num_threads, permute_seed=args.permute_seed, is_cleanup_run=args.cleanup_runs)
