@@ -23,12 +23,13 @@ def sum_shapes_and_calculate_ratio(directory):
     # Sum up shapes[0] for psi4_energies.npy files
     for energies_file in directory.glob(energies_pattern):
         data = np.load(energies_file)
-        total_energies += data.shape[0]
+        num_finite_energies = np.sum(np.isfinite(data))
+        total_energies += num_finite_energies
         # HARD CODED THAT THE NUMBER OF STATES IS 50, change later
-        if data.shape[0] == 50:
+        if num_finite_energies == 50:
             finished_molecules += 1
         else:
-            unfinished_num_states_left[energies_file.parent.stem] = 50-data.shape[0]
+            unfinished_num_states_left[energies_file.parent.stem] = 50-num_finite_energies
     
     # Calculate and report the results
     ratio = (total_energies / total_positions) * 100 if total_positions > 0 else 0
