@@ -26,6 +26,11 @@ def to_grappa_format(path, forcefield, forcefield_type='openmm', charge_model='c
     smiles = str(np.load(path/"smiles.npy"))
     mapped_smiles = str(np.load(path/"mapped_smiles.npy"))
 
+    valid_idxs = np.isfinite(energy)
+    valid_idxs = np.where(valid_idxs)[0]
+    energy = energy[valid_idxs]
+    gradient = gradient[valid_idxs]
+    xyz = xyz[valid_idxs]
 
 
     if forcefield_type == 'openmm':
@@ -80,6 +85,8 @@ def convert_dataset(path, forcefield, forcefield_type='openmm', charge_model='cl
             print()
             raise e
 
+    print()
+    
     return
 
 
