@@ -36,7 +36,6 @@ def to_grappa_format(path, forcefield, forcefield_type='openmm', charge_model='c
     if forcefield_type == 'openmm':
         # get topology:
         topology = openmm_utils.topology_from_pdb(pdbstring)
-        smiles = None
         ff = openmm_utils.get_openmm_forcefield(forcefield)
         system = ff.createSystem(topology)
         mol_id = smiles
@@ -86,7 +85,7 @@ def convert_dataset(path, forcefield, forcefield_type='openmm', charge_model='cl
             raise e
 
     print()
-    
+
     return
 
 
