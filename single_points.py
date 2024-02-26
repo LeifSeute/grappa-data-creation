@@ -85,6 +85,10 @@ def calc_state(pdb_folder, memory=32, num_threads=4):
     else:
         psi4_forces = np.zeros_like(positions)*np.nan
 
+    if np.all(np.isfinite(psi4_energies)) and np.all(np.isfinite(psi4_forces)):
+        log(f"all states have been calculated for {pdb_folder.stem}")
+        return
+
 
     # now pick a state index for an uncalculated state, i.e. an index in the energies array where the energy is either nan or inf:
     state_index = np.where(np.isnan(psi4_energies) | np.isinf(psi4_energies))[0][0]

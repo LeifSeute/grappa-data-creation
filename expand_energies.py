@@ -10,6 +10,11 @@ def add_nans(path):
                 if energies.shape[0] < 50:
                     energies = np.concatenate((energies, np.full((50-energies.shape[0]), np.nan)), axis=0)
                     forces = np.concatenate((forces, np.full((50-forces.shape[0], forces.shape[1], forces.shape[2]), np.nan)), axis=0)
+
+                    # now transform inf to nan:
+                    energies[np.isinf(energies)] = np.nan
+                    forces[np.isinf(forces)] = np.nan
+
                     np.save(subdir/"psi4_energies.npy", energies)
                     np.save(subdir/"psi4_forces.npy", forces)
             else:
