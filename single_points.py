@@ -184,7 +184,7 @@ def calc_all_states(folder, skip_errs=False, memory=32, num_threads=8, permute_s
 
     # if the folder itself contains the files, calculate them:
     if (Path(folder)/"positions.npy").exists():
-        print(f"calculating states for {Path(folder).stem}...")
+        log(f"calculating states for {Path(folder).stem}...")
         while has_uncalculated_states(folder):
             calc_state(folder, memory=memory, num_threads=num_threads)
         return
@@ -212,6 +212,7 @@ def calc_all_states(folder, skip_errs=False, memory=32, num_threads=8, permute_s
                         raise
                     log(f"failed to calculate states for {i} ({Path(folder).stem}): {type(e)}\n: {e}")
                     break
+            log(f"finished calculating states for {i}, {Path(pdb_folder).stem}...")
 
 
 if __name__ == "__main__":

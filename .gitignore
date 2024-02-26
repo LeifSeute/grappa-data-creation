@@ -23,6 +23,7 @@
 **.vscode
 
 **.npy
+**.npz
 **.out
 **.err
 **.log
@@ -44,3 +45,4 @@ __pycache__/
 
 psi_scratch/
 psi.**
+
