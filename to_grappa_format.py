@@ -23,8 +23,12 @@ def to_grappa_format(path, forcefield, forcefield_type='openmm', charge_model='c
 
     sequence = path.stem
 
-    smiles = str(np.load(path/"smiles.npy"))
-    mapped_smiles = str(np.load(path/"mapped_smiles.npy"))
+    # dont use smiles, just the sequence!
+
+    # smiles = str(np.load(path/"smiles.npy"))
+    # assert not smiles is not None and smiles != "None", f"smiles is None for {path.stem}"
+
+    # mapped_smiles = str(np.load(path/"mapped_smiles.npy"))
 
     valid_idxs = np.isfinite(energy)
     valid_idxs = np.where(valid_idxs)[0]
@@ -38,17 +42,17 @@ def to_grappa_format(path, forcefield, forcefield_type='openmm', charge_model='c
         topology = openmm_utils.topology_from_pdb(pdbstring)
         ff = openmm_utils.get_openmm_forcefield(forcefield)
         system = ff.createSystem(topology)
-        mol_id = smiles
+        mol_id = sequence
 
     elif forcefield_type == 'openff' or forcefield_type == 'openmmforcefields':
         openff_mol = openff_utils.mol_from_pdb(pdbstring)
-        mol_id = smiles
+        mol_id = sequence
         system, topology, _ = openff_utils.get_openmm_system(mapped_smiles=None, openff_forcefield=forcefield, openff_mol=openff_mol)
     else:
         raise ValueError(f"forcefield_type must be either openmm, openff or openmmforcefields but is {forcefield_type}")
 
     # create moldata object from the system (calculate the parameters, nonbonded forces and create reference energies and gradients from that)
-    moldata = MolData.from_openmm_system(openmm_system=system, openmm_topology=topology, xyz=xyz, gradient=gradient, energy=energy, mol_id=mol_id, pdb=pdbstring, smiles=smiles, sequence=sequence, allow_nan_params=True, charge_model=charge_model, ff_name=forcefield)
+    moldata = MolData.from_openmm_system(openmm_system=system, openmm_topology=topology, xyz=xyz, gradient=gradient, energy=energy, mol_id=mol_id, pdb=pdbstring, sequence=sequence, allow_nan_params=True, charge_model=charge_model, ff_name=forcefield)
 
     openmm_gradients = moldata.ff_gradient[forcefield]
     
