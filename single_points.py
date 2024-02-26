@@ -2,8 +2,8 @@ from ase import Atoms
 from ase.calculators.psi4 import Psi4
 import numpy as np
 
-import os
-from pathlib import Path
+from time import time
+
 
 
 from pathlib import Path
@@ -15,14 +15,10 @@ import os
 
 ###################
 
-# define AlreadyBusy error type:
-class AlreadyBusy(Exception):
-    pass
 
-
-def calc_states(pdb_folder, n_states=None, memory=32, num_threads=4, skip_if_busy=False):
+def calc_state(pdb_folder, memory=32, num_threads=4):
     """
-    Calculates the energies and forces for all states defined by positions.npy, atomic_numbers.npy and charge.npy in the given folder.
+    Calculates the energy and forces for one state defined by positions.npy, atomic_numbers.npy and charge.npy in the given folder. Several of these calls can run in parallel since the function signalizes that it is working on a state by writing inf to the psi4_energies.npy and psi4_forces.npy files.
     """
 
     log = Logger(Path(pdb_folder).parent, print_to_screen=True)
@@ -54,13 +50,6 @@ def calc_states(pdb_folder, n_states=None, memory=32, num_threads=4, skip_if_bus
     if not (pdb_folder/Path("positions.npy")).exists():
         return
     
-    if skip_if_busy:
-        if (pdb_folder/Path("psi4_energies.npy")).exists() and (pdb_folder/Path("psi4_forces.npy")).exists():
-            log(f"skipping {pdb_folder.stem}, already (partially) calculated")
-            raise AlreadyBusy(f"skipping {pdb_folder.stem}, already (partially) calculated")
-
-    np.save(str(pdb_folder/Path("psi4_energies.npy")), np.array([]))
-    np.save(str(pdb_folder/Path("psi4_forces.npy")), np.array([]))
 
     positions = np.load(str(pdb_folder/Path("positions.npy")))
     atomic_numbers = np.load(str(pdb_folder/Path("atomic_numbers.npy")))
@@ -84,31 +73,37 @@ def calc_states(pdb_folder, n_states=None, memory=32, num_threads=4, skip_if_bus
         multiplicity = int(multiplicity[0])
 
 
-  
-    # Calculate energies and forces using Psi4
-    psi4_energies = []
-    psi4_forces = []
 
     # load if present:
-    if (pdb_folder/Path("psi4_energies.npy")).exists() and (pdb_folder/Path("psi4_forces.npy")).exists():
-        if len(np.load(str(pdb_folder/Path("psi4_energies.npy")))) > 0:
-            psi4_energies = [e for e in np.load(str(pdb_folder/Path("psi4_energies.npy")))]
-        
-        if len(np.load(str(pdb_folder/Path("psi4_forces.npy")))) > 0:
-            psi4_forces = [f for f in np.load(str(pdb_folder/Path("psi4_forces.npy")))]
-        
+    if (pdb_folder/Path("psi4_energies.npy")).exists():
+        psi4_energies = np.load(str(pdb_folder/Path("psi4_energies.npy")))
+    else:
+        psi4_energies = np.zeros_like(positions[:,0,0])*np.nan
 
-    from time import time
+    if (pdb_folder/Path("psi4_forces.npy")).exists():       
+        psi4_forces = np.load(str(pdb_folder/Path("psi4_forces.npy")))
+    else:
+        psi4_forces = np.zeros_like(positions)*np.nan
+
+
+    # now pick a state index for an uncalculated state, i.e. an index in the energies array where the energy is either nan or inf:
+    state_index = np.where(np.isnan(psi4_energies) | np.isinf(psi4_energies))[0][0]
+
+    # assert that all force entries are nan of inf too
+    assert np.all(np.isnan(psi4_forces[state_index])) or np.all(np.isinf(psi4_forces[state_index]))
+
+    # now store the arrays with inf at the state index (to signal that the state is being calculated)
+    psi4_energies[state_index] = np.inf
+    psi4_forces[state_index] = np.ones_like(psi4_forces[state_index])*np.inf
+
+    np.save(str(pdb_folder/Path("psi4_energies.npy")), psi4_energies)
+    np.save(str(pdb_folder/Path("psi4_forces.npy")), psi4_forces)
+
+
     start = time()
 
-    missing_indices = range(len(psi4_energies), len(positions))
 
-    # restroct the amount of calculations:
-    if n_states is not None:
-        if len(missing_indices) > n_states:
-            missing_indices = missing_indices[:n_states]
-
-    log(f"calculating {len(missing_indices)} states using the config\n")
+    log(f"calculating state using the config\n")
     log(f"\tMETHOD: {METHOD}")
     log(f"\tBASIS: {BASIS}")
     log(f"\tMEMORY: {MEMORY}")
@@ -117,48 +112,60 @@ def calc_states(pdb_folder, n_states=None, memory=32, num_threads=4, skip_if_bus
     log(f"\tmultiplicity: {multiplicity}")
 
 
-    for num_calculated, i in enumerate(missing_indices):
-        
-        msg = f"calculating state number {i}/{len(positions)-1}... Progress: {num_calculated}/{len(missing_indices)-1}, time elapsed: {round((time() - start)/60., 2)} min"
-        if num_calculated > 0:
-            msg += f", avg time per state: {round((time() - start)/(num_calculated) / 60.,2)} min"
-        log(msg)
+    
+    msg = f"calculating state number {state_index}..."
+    
+    start = time()
 
-        # Read the configuration
-        atoms = Atoms(numbers=atomic_numbers, positions=positions[i])
+    # Read the configuration
+    atoms = Atoms(numbers=atomic_numbers, positions=positions[state_index])
 
-        ###################
-        # set up the calculator:
-        kwargs = {"atoms":atoms, "method":METHOD, "basis":BASIS, "charge":total_charge, "multiplicity":1, "d_convergence":ACCURACY*23.06}
+    ###################
+    # set up the calculator:
+    kwargs = {"atoms":atoms, "method":METHOD, "basis":BASIS, "charge":total_charge, "multiplicity":1, "d_convergence":ACCURACY*23.06}
 
-        if not MEMORY is None:
-            kwargs["memory"] = MEMORY
-        if not NUM_THREADS is None:
-            kwargs["num_threads"] = NUM_THREADS
+    if not MEMORY is None:
+        kwargs["memory"] = MEMORY
+    if not NUM_THREADS is None:
+        kwargs["num_threads"] = NUM_THREADS
 
-        atoms.set_calculator(Psi4(atoms=atoms, method=METHOD, memory=MEMORY, basis=BASIS, num_threads=NUM_THREADS, charge=total_charge, multiplicity=multiplicity))
-        ###################
+    atoms.set_calculator(Psi4(atoms=atoms, method=METHOD, memory=MEMORY, basis=BASIS, num_threads=NUM_THREADS, charge=total_charge, multiplicity=multiplicity))
+    ###################
 
-        energy = atoms.get_potential_energy(apply_constraint=False) # units: eV
-        forces = atoms.get_forces(apply_constraint=False) # units: eV/Angstrom
+    energy = atoms.get_potential_energy(apply_constraint=False) # units: eV
+    forces = atoms.get_forces(apply_constraint=False) # units: eV/Angstrom
 
-        EV_IN_KCAL = 23.0609
+    EV_IN_KCAL = 23.0609
 
-        energy = energy * EV_IN_KCAL
-        forces = forces * EV_IN_KCAL
+    energy = energy * EV_IN_KCAL
+    forces = forces * EV_IN_KCAL
 
-
-        psi4_energies.append(energy)
-        psi4_forces.append(forces)
-
-        # save the energies and forces in every step:
-        np.save(str(pdb_folder/Path("psi4_energies.npy")), np.array(psi4_energies))
-        np.save(str(pdb_folder/Path("psi4_forces.npy")), np.array(psi4_forces))
+    print(f"time elapsed: {round((time() - start)/60., 2)} min")
 
 
+    # load the energies and forces again (another process might have written to them in the meantime)
+    psi4_energies = np.load(str(pdb_folder/Path("psi4_energies.npy")))
+    psi4_forces = np.load(str(pdb_folder/Path("psi4_forces.npy")))
+
+    psi4_energies[state_index] = energy
+    psi4_forces[state_index] = forces
+
+    np.save(str(pdb_folder/Path("psi4_energies.npy")), psi4_energies)
+    np.save(str(pdb_folder/Path("psi4_forces.npy")), psi4_forces)
 
 
-def calc_all_states(folder, n_states=None, skip_errs=False, memory=32, num_threads=8, permute_seed=None, is_cleanup_run:list=[False, True]):
+def has_uncalculated_states(pdb_folder):
+    """
+    Returns True if there are any states with nan or inf in the psi4_energies.npy file or if the file does not exist.
+    """
+    pdb_folder = Path(pdb_folder)
+    if not (pdb_folder/Path("psi4_energies.npy")).exists():
+        return True
+    psi4_energies = np.load(str(pdb_folder/Path("psi4_energies.npy")))
+    return np.any(np.isnan(psi4_energies) | np.isinf(psi4_energies))
+
+
+def calc_all_states(folder, skip_errs=False, memory=32, num_threads=8, permute_seed=None):
     """
     For all folders in the given folder, call calc_states.
     is_cleanup_run: list of bools. for every entry, iterates over all sub folders once. If True, the function will skip the folders where a calculation has already been started.
@@ -174,45 +181,42 @@ def calc_all_states(folder, n_states=None, skip_errs=False, memory=32, num_threa
     # if the folder itself contains the files, calculate them:
     if (Path(folder)/"positions.npy").exists():
         print(f"calculating states for {Path(folder).stem}...")
-        calc_states(folder, n_states=n_states, memory=memory, num_threads=num_threads, skip_if_busy=False)
+        while has_uncalculated_states(folder):
+            calc_state(folder, memory=memory, num_threads=num_threads)
         return
 
-    # iterate once with skip_if_busy=False and once with skip_if_busy=True (to finished the calculations that were potentially interrupted)
-    for skip_if_busy in is_cleanup_run:
-
-        skip_if_busy = not bool(skip_if_busy)
-
-        # also recalculate the folders in case something was added
+    # iterate two times over the folders, since there might have been some errors
+    
+    for i in range(2):
 
         pdb_folders = [f for f in Path(folder).iterdir() if f.is_dir()]
         random.shuffle(pdb_folders)
         log(f"calculating states for {len(pdb_folders)} folders in a first iteration.")
 
+        # iterate over the pdb_folders until there are no uncalculated states left:
+
         for i, pdb_folder in enumerate(pdb_folders):
             log("")
             log(f"calculating states for {i}, {Path(pdb_folder).stem}...")
-            try:
-                calc_states(pdb_folder, n_states=n_states, memory=memory, num_threads=num_threads, skip_if_busy=skip_if_busy)
-            except KeyboardInterrupt:
-                raise
-            except Exception as e:
-                if type(e) == AlreadyBusy:
-                    continue
-                if not skip_errs:
+            while has_uncalculated_states(pdb_folder):
+                try:
+                    calc_state(pdb_folder, memory=memory, num_threads=num_threads)
+                except KeyboardInterrupt:
                     raise
-                log(f"failed to calculate states for {i} ({Path(folder).stem}): {type(e)}\n: {e}")
+                except Exception as e:
+                    if not skip_errs:
+                        raise
+                    log(f"failed to calculate states for {i} ({Path(folder).stem}): {type(e)}\n: {e}")
+                    break
 
-        log(f"finished the iteration with skip_if_busy={skip_if_busy}.")
 
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='Calculates states for a given folder.')
     parser.add_argument('folder', type=str, help='The folder containing the PDB files.')
-    parser.add_argument('--n_states', '-n', type=int, help='The number of states to calculate.', default=None)
     parser.add_argument('--skip_errs', '-s', action='store_true', help='Skip errors.', default=False)
     parser.add_argument('--permute_seed', '-p', type=int, help='The seed to use for shuffling the folders.', default=None)
     parser.add_argument('--memory', '-m', type=int, help='The amount of memory to use.', default=32)
     parser.add_argument('--num_threads', '-t', type=int, help='The number of threads to use.', default=4)
-    parser.add_argument('--cleanup_runs', '-c', type=bool, nargs='+', help='If True, the function will skip the folders where a calculation has already been started.', default=[False, True, True])
     args = parser.parse_args()
-    calc_all_states(folder=args.folder, n_states=args.n_states, skip_errs=args.skip_errs, memory=args.memory, num_threads=args.num_threads, permute_seed=args.permute_seed, is_cleanup_run=args.cleanup_runs)
+    calc_all_states(folder=args.folder, skip_errs=args.skip_errs, memory=args.memory, num_threads=args.num_threads, permute_seed=args.permute_seed)
