@@ -36,30 +36,44 @@ def to_grappa_format(path, forcefield, forcefield_type='openmm', charge_model='c
     gradient = gradient[valid_idxs]
     xyz = xyz[valid_idxs]
 
+    ref_forcefield = forcefield[0]
 
     if forcefield_type == 'openmm':
         # get topology:
         topology = openmm_utils.topology_from_pdb(pdbstring)
-        ff = openmm_utils.get_openmm_forcefield(forcefield)
+        ff = openmm_utils.get_openmm_forcefield(ref_forcefield)
         system = ff.createSystem(topology)
         mol_id = sequence
 
     elif forcefield_type == 'openff' or forcefield_type == 'openmmforcefields':
         openff_mol = openff_utils.mol_from_pdb(pdbstring)
         mol_id = sequence
-        system, topology, _ = openff_utils.get_openmm_system(mapped_smiles=None, openff_forcefield=forcefield, openff_mol=openff_mol)
+        system, topology, _ = openff_utils.get_openmm_system(mapped_smiles=None, openff_forcefield=ref_forcefield, openff_mol=openff_mol)
     else:
         raise ValueError(f"forcefield_type must be either openmm, openff or openmmforcefields but is {forcefield_type}")
 
     # create moldata object from the system (calculate the parameters, nonbonded forces and create reference energies and gradients from that)
-    moldata = MolData.from_openmm_system(openmm_system=system, openmm_topology=topology, xyz=xyz, gradient=gradient, energy=energy, mol_id=mol_id, pdb=pdbstring, sequence=sequence, allow_nan_params=True, charge_model=charge_model, ff_name=forcefield)
+    moldata = MolData.from_openmm_system(openmm_system=system, openmm_topology=topology, xyz=xyz, gradient=gradient, energy=energy, mol_id=mol_id, pdb=pdbstring, sequence=sequence, allow_nan_params=True, charge_model=charge_model, ff_name=ref_forcefield)
 
-    openmm_gradients = moldata.ff_gradient[forcefield]
+    openmm_gradients = moldata.ff_gradient[ref_forcefield]
     
     # calculate the crmse:
     crmse = np.sqrt(np.mean((openmm_gradients-gradient)**2))
     if crmse > 15:
         print(f"Warning: crmse between {forcefield} and QM is {round(crmse, 1)} for {path.stem}, std of gradients is {round(np.std(gradient), 1)}")
+
+    for ff in forcefield[1:]:
+        if forcefield_type == 'openmm':
+            ff = openmm_utils.get_openmm_forcefield(ff)
+            system = ff.createSystem(topology)
+        elif forcefield_type == 'openff' or forcefield_type == 'openmmforcefields':
+            system, topology, _ = openff_utils.get_openmm_system(mapped_smiles=None, openff_forcefield=ff, openff_mol=openff_mol)
+        
+        energy_ff, gradient_ff = openmm_utils.get_energies(system, xyz)
+        gradient_ff = -gradient_ff
+
+        moldata.ff_gradient[ff] = gradient_ff
+        moldata.ff_energy[ff] = energy_ff
 
 
     moldata.save(target_path/(path.stem+'.npz'))
@@ -77,6 +91,8 @@ def convert_dataset(path, forcefield, forcefield_type='openmm', charge_model='cl
         target_path = Path(target_path)
         target_path.mkdir(parents=True, exist_ok=True)
         
+    if not isinstance(forcefield, list):
+        forcefield = [forcefield]
 
     print()
     for i, subdir in enumerate(path.iterdir()):
@@ -103,7 +119,7 @@ if __name__ == "__main__":
         "--target_path", type=str, help="Path to the target folder in which the dataset is stored as collection of npz files."
     )
     parser.add_argument(
-        "--forcefield", type=str, default="amber99sbildn", help="Forcefield to use for the conversion."
+        "--forcefield", type=str, nargs='+', default=["amber99sbildn", 'amber14'], help="Forcefield to use for the conversion."
     )
     parser.add_argument(
         "--forcefield_type", type=str, default="openmm", help="Type of forcefield to use for the conversion. Available: openmm, openff, openmmforcefields."
