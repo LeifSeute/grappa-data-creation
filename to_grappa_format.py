@@ -72,6 +72,9 @@ def to_grappa_format(path, forcefield, forcefield_type='openmm', charge_model='c
         energy_ff, gradient_ff = openmm_utils.get_energies(system, xyz)
         gradient_ff = -gradient_ff
 
+        if ff=='amber14-all':
+            ff = 'amber14'
+
         moldata.ff_gradient[ff] = gradient_ff
         moldata.ff_energy[ff] = energy_ff
 
@@ -119,7 +122,7 @@ if __name__ == "__main__":
         "--target_path", type=str, help="Path to the target folder in which the dataset is stored as collection of npz files."
     )
     parser.add_argument(
-        "--forcefield", type=str, nargs='+', default=["amber99sbildn", 'amber14'], help="Forcefield to use for the conversion."
+        "--forcefield", type=str, nargs='+', default=["amber99sbildn", 'amber14-all'], help="Forcefield to use for the conversion."
     )
     parser.add_argument(
         "--forcefield_type", type=str, default="openmm", help="Type of forcefield to use for the conversion. Available: openmm, openff, openmmforcefields."
