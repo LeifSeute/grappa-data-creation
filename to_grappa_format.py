@@ -64,8 +64,8 @@ def to_grappa_format(path, forcefield, forcefield_type='openmm', charge_model='c
 
     for ff in forcefield[1:]:
         if forcefield_type == 'openmm':
-            ff = openmm_utils.get_openmm_forcefield(ff)
-            system = ff.createSystem(topology)
+            ff_ = openmm_utils.get_openmm_forcefield(ff)
+            system = ff_.createSystem(topology)
         elif forcefield_type == 'openff' or forcefield_type == 'openmmforcefields':
             system, topology, _ = openff_utils.get_openmm_system(mapped_smiles=None, openff_forcefield=ff, openff_mol=openff_mol)
         
