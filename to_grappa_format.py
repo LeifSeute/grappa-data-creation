@@ -78,6 +78,7 @@ def to_grappa_format(path, forcefield, forcefield_type='openmm', charge_model='c
         moldata.ff_gradient[ff] = gradient_ff
         moldata.ff_energy[ff] = energy_ff
 
+    print(moldata.ff_energy.keys())
 
     moldata.save(target_path/(path.stem+'.npz'))
 
