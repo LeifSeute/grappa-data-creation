@@ -10,7 +10,7 @@
 #SBATCH --output=logfiles/job.o%j
 #SBATCH --error=logfiles/job.e%j
 
-THIS_DIR=/hits/basement/mbm/seutelf/grappa-data-creation
+THIS_DIR=/hits/basement/mbm/seutelf/grappa-data-creation/uncapped
 DS=data/uncapped_dataset_basement
 
 MEM=32                                   # Memory per python script
@@ -26,7 +26,7 @@ conda activate psi4
 cd $THIS_DIR
 
 for i in $(seq 1 $NUM_AGENTS); do
-    nohup python single_points.py "$THIS_DIR/$DS" -m $MEM -t $CORES -s &
+    nohup python ../single_points.py "$THIS_DIR/$DS" -m $MEM -t $CORES -s &
     pids+=($!) # Capture the process ID of the background job
 done
 

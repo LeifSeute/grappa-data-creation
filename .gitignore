@@ -42,6 +42,7 @@ __pycache__/
 **.venv.bak/
 
 **log.txt
+**log_old.txt
 
 psi_scratch/
 psi.**

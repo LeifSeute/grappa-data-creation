@@ -11,7 +11,7 @@ def generate_states(pdb_folder, n_states=10, temperature=300, forcefield='amber9
     Generates files 'atomic_numbers.npy', 'positions.npy', 'openmm_energies.npy', 'openmm_forces.npy' and 'charge.npy' in the given pdb_folder.
     Units are angstrom, kcal/mol and elem charge.
     time step is 0.001 ps.
-    we simulate 4/5 of between_steps at 500K and 1/5 at the given temperature before sampling the state. this is to explore a more diverse conformational space, while still sampling from the boltzmann distribution at the given temperature.
+    we simulate 1/2 of between_steps at 1000K and 1/2 at the given temperature before sampling the state. this is to explore a more diverse conformational space, while still sampling from the boltzmann distribution at the given temperature.
     '''
 
     forcefield = get_openmm_forcefield(forcefield)
@@ -29,7 +29,7 @@ def generate_states(pdb_folder, n_states=10, temperature=300, forcefield='amber9
     simulation = app.Simulation(pdb.topology, system, integrator) # 0.001 ps time step
     simulation.context.setPositions(pdb.positions)
 
-    total_steps = n_states * between_steps + n_states * (between_steps//5)
+    total_steps = n_states * between_steps + n_states * (between_steps//2)
     if plot:
         total_steps += 100
         
@@ -51,15 +51,15 @@ def generate_states(pdb_folder, n_states=10, temperature=300, forcefield='amber9
     # Sampling states with OpenMM and calculating energies and forces
     for _ in range(n_states):
         
-        # between steps of MD at 500K: get out of a local minimum
-        integrator.setTemperature(500)
+        # between steps of MD at 1000K: get out of a local minimum
+        integrator.setTemperature(1000)
         simulation.step(between_steps)
         step += between_steps
 
         # between_steps/10 steps of MD to reach the given temperature
         integrator.setTemperature(temperature)
-        simulation.step(between_steps//5)
-        step += between_steps//5
+        simulation.step(between_steps//2)
+        step += between_steps//2
 
         state = simulation.context.getState(getEnergy=True, getForces=True, getPositions=True)
 

@@ -23,12 +23,10 @@ def to_grappa_format(path, forcefield, forcefield_type='openmm', charge_model='c
 
     sequence = path.stem
 
-    # dont use smiles, just the sequence!
+    smiles = str(np.load(path/"smiles.npy"))
+    assert not smiles is not None and smiles != "None", f"smiles is None for {path.stem}"
 
-    # smiles = str(np.load(path/"smiles.npy"))
-    # assert not smiles is not None and smiles != "None", f"smiles is None for {path.stem}"
-
-    # mapped_smiles = str(np.load(path/"mapped_smiles.npy"))
+    mapped_smiles = str(np.load(path/"mapped_smiles.npy"))
 
     valid_idxs = np.isfinite(energy)
     valid_idxs = np.where(valid_idxs)[0]
@@ -53,7 +51,7 @@ def to_grappa_format(path, forcefield, forcefield_type='openmm', charge_model='c
         raise ValueError(f"forcefield_type must be either openmm, openff or openmmforcefields but is {forcefield_type}")
 
     # create moldata object from the system (calculate the parameters, nonbonded forces and create reference energies and gradients from that)
-    moldata = MolData.from_openmm_system(openmm_system=system, openmm_topology=topology, xyz=xyz, gradient=gradient, energy=energy, mol_id=mol_id, pdb=pdbstring, sequence=sequence, allow_nan_params=True, charge_model=charge_model, ff_name=ref_forcefield)
+    moldata = MolData.from_openmm_system(openmm_system=system, openmm_topology=topology, xyz=xyz, gradient=gradient, energy=energy, mol_id=mol_id, pdb=pdbstring, sequence=sequence, allow_nan_params=True, charge_model=charge_model, ff_name=ref_forcefield, smiles=smiles, mapped_smiles=mapped_smiles)
 
     openmm_gradients = moldata.ff_gradient[ref_forcefield]
     

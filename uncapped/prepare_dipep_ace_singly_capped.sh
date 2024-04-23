@@ -15,17 +15,19 @@ mapfile -t sequences < sequences/singly_capped_dipeptide_left.txt
 sequences_str="${sequences[*]}"
 ############################################
 
+THIS_DIR=/hits/basement/mbm/seutelf/grappa-data-creation/uncapped
+
 source ~/.bashrc
 conda activate pepgen
 
-python generate_pdbs.py --folder data/dipep_ace_singly_capped -s $sequences_str --ace_cap
+python ../generate_pdbs.py --folder $THIS_DIR/data/dipep_ace_singly_capped -s $sequences_str --ace_cap
 
 
 echo Done. Now generating smiles strings...
 
 conda activate espaloma
 
-python smiles_string.py data/dipep_ace_singly_capped
+python ../smiles_string.py $THIS_DIR/data/dipep_ace_singly_capped
 
 
 
@@ -33,4 +35,4 @@ echo Done. Now generating states via MD...
 
 conda activate grappa
 
-python generate_states.py data/dipep_ace_singly_capped -n 50 -t 300
+python ../generate_states.py $THIS_DIR/data/dipep_ace_singly_capped -n 50 -t 300
