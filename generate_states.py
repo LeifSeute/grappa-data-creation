@@ -6,7 +6,7 @@ from grappa.utils.openmm_utils import get_openmm_forcefield
 
 from pathlib import Path
 
-def generate_states(pdb_folder, n_states=10, temperature=300, forcefield='amber99sbildn', plot=False, between_steps=50000):
+def generate_states(pdb_folder, n_states=10, temperature=300, forcefield='amber99sbildn', plot=False, between_steps=50000, t_max=1000):
     '''
     Generates files 'atomic_numbers.npy', 'positions.npy', 'openmm_energies.npy', 'openmm_forces.npy' and 'charge.npy' in the given pdb_folder.
     Units are angstrom, kcal/mol and elem charge.
@@ -52,7 +52,7 @@ def generate_states(pdb_folder, n_states=10, temperature=300, forcefield='amber9
     for _ in range(n_states):
         
         # between steps of MD at 1000K: get out of a local minimum
-        integrator.setTemperature(1000)
+        integrator.setTemperature(t_max)
         simulation.step(between_steps)
         step += between_steps
 
@@ -106,7 +106,7 @@ def generate_states(pdb_folder, n_states=10, temperature=300, forcefield='amber9
 
 
 
-def generate_all_states(folder, n_states=10, temperature=300, plot=False, between_steps=50000, forcefield='amber99sbildn'):
+def generate_all_states(folder, n_states=10, temperature=300, plot=False, between_steps=50000, forcefield='amber99sbildn', t_max=1000):
 
     from pathlib import Path
     for i, pdb_folder in enumerate(Path(folder).iterdir()):
@@ -114,7 +114,7 @@ def generate_all_states(folder, n_states=10, temperature=300, plot=False, betwee
             log = Logger(Path(folder), print_to_screen=True)
             log(f"generating states for {i}")
             try:
-                generate_states(pdb_folder, n_states=n_states, temperature=temperature, plot=plot, between_steps=between_steps, forcefield=forcefield)
+                generate_states(pdb_folder, n_states=n_states, temperature=temperature, plot=plot, between_steps=between_steps, forcefield=forcefield, t_max=t_max)
             except Exception as e:
                 log("-----------------------------------")
                 log(f"failed to generate states for {i} in {pdb_folder.stem}:{type(e)}:\n{e}")
@@ -130,6 +130,7 @@ if __name__ == "__main__":
     parser.add_argument('--plot', '-p', action='store_true', help='Whether to plot the sampling temperatures and potential energies.')
     parser.add_argument('--between_steps', '-b', type=int, help='The number of steps to take between the sampling steps.', default=50000)
     parser.add_argument('--forcefield', '-ff', type=str, default='amber99sbildn', help='The forcefield to use in the MD simulation for state sampling. Will be intput to grappas grappa.utils.openmm_utils.get_openmm_forcefield. Recommended: amber99sbildn/amber99sbildn*.')
+    parser.add_argument('--t_max', '-tm', type=int, help='The temperature to use for the first half of the between_steps to get out of local minima.', default=1000)
 
     args = parser.parse_args()
 

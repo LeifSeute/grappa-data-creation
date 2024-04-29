@@ -3,7 +3,8 @@ import random
 from pathlib import Path
 
 # Natural amino acids:
-AALETTERS = ['A','C','D','E','F','G','H','I','K','L','M','N','P','Q','R','S','T','V','W','Y', '1', '2', '3', '4', '5', '6'] # protonations states: 1: HID, 2: HIP, 3: GLH, 4: ASH, 5: LYN 6: CYX
+AALETTERS = ['A','C','D','E','F','G','H','I','K','L','M','N','P','Q','R','S','T','V','W','Y', '1', '2', '3', '4', '5', '6']
+# protonation states: 1: HID, 2: HIP, 3: GLH, 4: ASH, 5: LYN 6: CYX
 
 SEED = 42
 random.seed(SEED)
@@ -18,15 +19,31 @@ def write_all_AAs():
 
 # AB != BA because of the caps!
 def sample_dipeptides():
-    filename = f"dipeptides.txt"
-    with open(this_file_path/"sequences"/filename, "w") as file:
-        for aa in AALETTERS:
-            for aa2 in AALETTERS:
-                file.write(aa + aa2 + "\n")
+    num_files = 10
+    peptides_per_file = (len(AALETTERS) ** 2) // num_files
 
-    print(f"Written {len(AALETTERS)} amino acids to {this_file_path/filename}.")
+    # Create 10 files and write dipeptides to them
+    file_handlers = []
+    for i in range(num_files):
+        filename = f"sequences/dipeptides_{i}.txt"
+        file = open(filename, "w")
+        file_handlers.append(file)
+    
+    counter = 0
+    for aa in AALETTERS:
+        for aa2 in AALETTERS:
+            file_index = counter%num_files
+            file_handlers[file_index].write(aa + aa2 + "\n")
+            counter += 1
+            
+    # Ensure all files are closed at the end
+    for file in file_handlers:
+        if not file.closed:
+            file.close()
+
+    print(f"Written {counter} amino acids to {num_files} files.")
 
 if __name__ == "__main__":
     (this_file_path/"sequences").mkdir(parents=True, exist_ok=True)
-    write_all_AAs()
+    # write_all_AAs()
     sample_dipeptides()

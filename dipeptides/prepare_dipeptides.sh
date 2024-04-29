@@ -1,25 +1,28 @@
 #! /bin/bash
 
+IDX=${1:-0}
+
+echo "Running for index $IDX"
+
 # generates pdbs and smiles strings, then samples states
 
-set -e
-
-THIS_DIR=/hits/basement/mbm/seutelf/grappa-data-creation/uncapped
-
-DATADIR=$THIS_DIR/data/dipeptides_300K
+THIS_DIR=/hits/fast/mbm/seutelf/software/grappa_data_creation/dipeptides
+DATADIR=$THIS_DIR/data/${IDX}_dipeptides_300K
 
 # load the sequences
 ############################################
 # Read sequences into a bash array
-# ACE IS LEFT, NME IS RIGHT, SO WE NEED TO FIX THE LEFT SIDE (this is the file with 'right' in the name)
-# (we want every residue to have a missing ace cap a fixed number of times)
-mapfile -t sequences < $THIS_DIR/sequences/dipeptides.txt
+mapfile -t sequences < $THIS_DIR/sequences/dipeptides_${IDX}.txt
 
 # Convert the array into a space-separated string of sequences
 sequences_str="${sequences[*]}"
+
+echo "Generating data for sequences: $sequences_str"
 ############################################
 
 source ~/.bashrc
+
+
 conda activate pepgen # requires pepgen, numpy
 
 python ../generate_pdbs.py --folder $DATADIR -s $sequences_str --nme_cap --ace_cap
@@ -36,5 +39,5 @@ echo Done. Now generating states via MD...
 
 conda activate grappa # requires grappa and openmm
 
-# python ../generate_states.py $DATADIR -n 50 -t 300
-python ../generate_states.py $DATADIR -n 5 -t 300 -p
+# python ../generate_states.py $DATADIR -n 5 -t 300 --t_max 1000 -p # test run with plotting
+python ../generate_states.py $DATADIR -n 50 -t 300 --t_max 1000

@@ -7,15 +7,15 @@
 #SBATCH --mem=58G                       # Total memory for all tasks
 #SBATCH --mincpus=26
 #SBATCH -t 24:00:00
-#SBATCH --output=logfiles/job.o%j
-#SBATCH --error=logfiles/job.e%j
+#SBATCH --output=./logs/job.o%j
+#SBATCH --error=./logs/job.e%j
 
-THIS_DIR=/hits/basement/mbm/seutelf/grappa-data-creation/uncapped
-DS=data/uncapped_dataset_basement
+THIS_DIR=/hits/basement/mbm/seutelf/grappa-data-creation/dipeptides
+DS=data/dipeptides_300K
 
 MEM=32                                   # Memory per python script
 CORES=12                                 # Cores per python script
-NUM_AGENTS=2                             # Number of parallel agents
+NUM_AGENTS=2                             # Number of parallel agents per node
 
 pids=() # Array to hold process IDs
 

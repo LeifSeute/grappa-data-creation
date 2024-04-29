@@ -20,4 +20,4 @@ if __name__ == "__main__":
         print(s)
 
         os.makedirs(args.folder, exist_ok=True)
-        generate_peptide(code=s, dir=Path(args.folder)/s, e=False, silent=True, overwrite=True, openmm_standard=False, t=False, nme_cap=args.nme_cap, ace_cap=args.ace_cap)
+        generate_peptide(code=s, dir=Path(args.folder)/s, e=False, silent=True, overwrite=True, openmm_standard=True, t=False, nme_cap=args.nme_cap, ace_cap=args.ace_cap)
