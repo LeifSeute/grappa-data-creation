@@ -28,13 +28,13 @@ python ../generate_pdbs.py --folder $DATADIR -s $sequences_str --nme_cap --ace_c
 
 echo Done. Now generating smiles strings...
 
-conda activate espaloma # requires openff, numpy
+conda activate openff # requires openff, numpy
 
 python ../smiles_string.py $DATADIR
 
 
 echo Done. Now generating states via MD...
 
-conda activate grappa # requires grappa and openmm
+conda activate grappa_openmm # requires grappa and openmm
 
 python ../generate_states.py $DATADIR -n 30 -t 1000 --t_max 2000
