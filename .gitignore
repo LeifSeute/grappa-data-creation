@@ -1,5 +1,6 @@
 # gitignore all file endings from gromacs except mdp and fasta:
 
+**.txt**
 **.gro**
 **.top**
 **.itp**
