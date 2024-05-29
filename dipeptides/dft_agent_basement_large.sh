@@ -15,7 +15,7 @@ THIS_DIR=/hits/basement/mbm/seutelf/grappa-data-creation/dipeptides
 DS=data/dipeptides_300K
 
 MEM=64                                   # Memory per python script
-CORES=16                                 # Cores per python script
+CORES=12                                 # Cores per python script
 NUM_AGENTS=1                             # Number of parallel agents per node
 
 pids=() # Array to hold process IDs
