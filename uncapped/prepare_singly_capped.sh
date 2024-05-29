@@ -26,7 +26,7 @@ python generate_pdbs.py --folder $THIS_DIR/data/singly_capped_ace -s $sequences_
 
 echo Done. Now generating smiles strings...
 
-conda activate espaloma
+conda activate openff
 
 python smiles_string.py $THIS_DIR/data/singly_capped_nme
 python smiles_string.py $THIS_DIR/data/singly_capped_ace
@@ -35,7 +35,7 @@ python smiles_string.py $THIS_DIR/data/singly_capped_ace
 
 echo Done. Now generating states via MD...
 
-conda activate grappa
+conda activate grappa_openmm
 
 python generate_states.py $THIS_DIR/data/singly_capped_nme -n 50 -t 300
 python generate_states.py $THIS_DIR/data/singly_capped_ace -n 50 -t 300

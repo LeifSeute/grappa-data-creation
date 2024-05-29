@@ -4,7 +4,7 @@ import numpy as np
 from grappa.data import MolData
 from grappa.utils import openmm_utils, openff_utils
 
-def to_grappa_format(path, forcefield, forcefield_type='openmm', charge_model='classical', target_path=None):
+def to_grappa_format(path, forcefield, forcefield_type='openmm', charge_model='amber99', target_path=None):
     """
     Converts the psi4_energies.npy and psi4_forces.npy files in the given folder to a format that can be read by grappa. 
     """
@@ -121,13 +121,13 @@ if __name__ == "__main__":
         "--target_path", type=str, help="Path to the target folder in which the dataset is stored as collection of npz files."
     )
     parser.add_argument(
-        "--forcefield", type=str, nargs='+', default=["amber99sbildn", 'amber14-all'], help="Forcefield to use for the conversion."
+        "--forcefield", type=str, nargs='+', default=["amber99sbildn"], help="Forcefield to use for the conversion."
     )
     parser.add_argument(
         "--forcefield_type", type=str, default="openmm", help="Type of forcefield to use for the conversion. Available: openmm, openff, openmmforcefields."
     )
     parser.add_argument(
-        "--charge_model", type=str, default="classical", help="Charge model of the underlying forcefield. Available: classical, am1BCC"
+        "--charge_model", type=str, default="amber99", help="Charge model of the underlying forcefield. Available: classical, am1BCC"
     )
     args = parser.parse_args()
 

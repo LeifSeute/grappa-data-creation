@@ -120,13 +120,14 @@ def calc_state(pdb_folder, memory=32, num_threads=4):
     msg = f"calculating state number {state_index}..."
     
     start = time()
+    EV_IN_KCAL_PM = 23.0609
 
     # Read the configuration
     atoms = Atoms(numbers=atomic_numbers, positions=positions[state_index])
 
     ###################
     # set up the calculator:
-    kwargs = {"atoms":atoms, "method":METHOD, "basis":BASIS, "charge":total_charge, "multiplicity":1, "d_convergence":ACCURACY*23.06}
+    kwargs = {"atoms":atoms, "method":METHOD, "basis":BASIS, "charge":total_charge, "multiplicity":1, "d_convergence":ACCURACY*EV_IN_KCAL_PM}
 
     if not MEMORY is None:
         kwargs["memory"] = MEMORY
@@ -139,10 +140,9 @@ def calc_state(pdb_folder, memory=32, num_threads=4):
     energy = atoms.get_potential_energy(apply_constraint=False) # units: eV
     forces = atoms.get_forces(apply_constraint=False) # units: eV/Angstrom
 
-    EV_IN_KCAL = 23.0609
 
-    energy = energy * EV_IN_KCAL
-    forces = forces * EV_IN_KCAL
+    energy = energy * EV_IN_KCAL_PM
+    forces = forces * EV_IN_KCAL_PM
 
     print(f"time elapsed: {round((time() - start)/60., 2)} min")
 

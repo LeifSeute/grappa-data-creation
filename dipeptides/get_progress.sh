@@ -3,3 +3,4 @@ DS=data/dipeptides_300K
 
 pushd $THIS_DIR
 python ../get_progress.py "$THIS_DIR/$DS"
+popd

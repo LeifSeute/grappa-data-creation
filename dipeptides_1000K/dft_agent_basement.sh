@@ -11,8 +11,8 @@
 #SBATCH --output=./logs/job.o%j
 #SBATCH --error=./logs/job.e%j
 
-THIS_DIR=/hits/basement/mbm/seutelf/grappa-data-creation/dipeptides
-DS=data/dipeptides_300K
+THIS_DIR=/hits/basement/mbm/seutelf/grappa-data-creation/dipeptides_1000K
+DS=data/dipeptides_1000K
 
 MEM=32                                   # Memory per python script
 CORES=12                                 # Cores per python script

@@ -6,7 +6,7 @@ echo "Running for index $IDX"
 
 # generates pdbs and smiles strings, then samples states
 THIS_DIR=$(dirname "$(realpath "$0")")
-DATADIR=$THIS_DIR/data/${IDX}_dipeptides_300K
+DATADIR=$THIS_DIR/data/${IDX}_dipeptides_1000K
 
 # load the sequences
 ############################################
@@ -28,7 +28,6 @@ python ../generate_pdbs.py --folder $DATADIR -s $sequences_str --nme_cap --ace_c
 
 echo Done. Now generating smiles strings...
 
-
 conda activate openff # requires openff, numpy
 
 python ../smiles_string.py $DATADIR
@@ -38,5 +37,4 @@ echo Done. Now generating states via MD...
 
 conda activate grappa_openmm # requires grappa and openmm
 
-# python ../generate_states.py $DATADIR -n 5 -t 300 --t_max 1000 -p # test run with plotting
-python ../generate_states.py $DATADIR -n 50 -t 300 --t_max 1000
+python ../generate_states.py $DATADIR -n 30 -t 1000 --t_max 2000

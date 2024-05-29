@@ -25,7 +25,7 @@ python ../generate_pdbs.py --folder $THIS_DIR/data/dipep_ace_singly_capped -s $s
 
 echo Done. Now generating smiles strings...
 
-conda activate espaloma
+conda activate openff
 
 python ../smiles_string.py $THIS_DIR/data/dipep_ace_singly_capped
 
@@ -33,6 +33,6 @@ python ../smiles_string.py $THIS_DIR/data/dipep_ace_singly_capped
 
 echo Done. Now generating states via MD...
 
-conda activate grappa
+conda activate grappa_openmm
 
 python ../generate_states.py $THIS_DIR/data/dipep_ace_singly_capped -n 50 -t 300

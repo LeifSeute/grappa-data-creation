@@ -1,5 +1,6 @@
 # gitignore all file endings from gromacs except mdp and fasta:
 
+**.txt**
 **.gro**
 **.top**
 **.itp**
@@ -16,6 +17,7 @@
 **.xyz**
 **job.**
 
+dipeptides/yp-correction
 
 **.png
 

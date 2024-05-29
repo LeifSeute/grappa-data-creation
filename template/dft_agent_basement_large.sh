@@ -6,17 +6,17 @@
 #SBATCH -p haswell.p
 #SBATCH --job-name=psi4      # Job name
 #SBATCH --mem=58G                       # Total memory for all tasks
-#SBATCH --mincpus=26
+#SBATCH --mincpus=16
 #SBATCH -t 24:00:00
 #SBATCH --output=./logs/job.o%j
 #SBATCH --error=./logs/job.e%j
 
-THIS_DIR=/hits/basement/mbm/seutelf/grappa-data-creation/dipeptides
-DS=data/dipeptides_300K
+THIS_DIR=/hits/basement/mbm/seutelf/grappa-data-creation/dipeptides_500K
+DS=data/dipeptides_500K
 
-MEM=32                                   # Memory per python script
-CORES=12                                 # Cores per python script
-NUM_AGENTS=2                             # Number of parallel agents per node
+MEM=64                                   # Memory per python script
+CORES=16                                 # Cores per python script
+NUM_AGENTS=1                             # Number of parallel agents per node
 
 pids=() # Array to hold process IDs
 
