@@ -13,10 +13,16 @@ def sum_shapes_and_calculate_ratio(directory):
     total_molecules = 0
     finished_molecules = 0
     unfinished_num_states_left = {}
+
+    N_STATES = None
     
     # Sum up shapes[0] for positions.npy files
     for positions_file in directory.glob(positions_pattern):
         data = np.load(positions_file)
+        if N_STATES is None:
+            N_STATES = data.shape[0]
+        else:
+            assert N_STATES == data.shape[0], f"Number of states in {positions_file} does not match the previous files."
         total_positions += data.shape[0]
         total_molecules += 1
     
@@ -25,8 +31,7 @@ def sum_shapes_and_calculate_ratio(directory):
         data = np.load(energies_file)
         num_finite_energies = np.sum(np.isfinite(data))
         total_energies += num_finite_energies
-        # HARD CODED THAT THE NUMBER OF STATES IS 50, change later
-        if num_finite_energies == 50:
+        if num_finite_energies == N_STATES:
             finished_molecules += 1
         else:
             unfinished_num_states_left[energies_file.parent.stem] = 50-num_finite_energies
