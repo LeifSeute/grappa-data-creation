@@ -34,7 +34,7 @@ def sum_shapes_and_calculate_ratio(directory):
         if num_finite_energies == N_STATES:
             finished_molecules += 1
         else:
-            unfinished_num_states_left[energies_file.parent.stem] = 50-num_finite_energies
+            unfinished_num_states_left[energies_file.parent.stem] = N_STATES-num_finite_energies
     
     # Calculate and report the results
     ratio = (total_energies / total_positions) * 100 if total_positions > 0 else 0

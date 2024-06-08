@@ -3,8 +3,9 @@ from pathlib import Path
 import numpy as np
 from grappa.data import MolData
 from grappa.utils import openmm_utils, openff_utils
+from tqdm import tqdm
 
-def to_grappa_format(path, forcefield, forcefield_type='openmm', charge_model='amber99', target_dir=None):
+def to_grappa_format(path, forcefield, forcefield_type='openmm', charge_model='amber99', target_dir=None, crmse_limit=15):
     """
     Converts the psi4_energies.npy and psi4_forces.npy files in the given folder to a format that can be read by grappa. 
     """
@@ -44,6 +45,7 @@ def to_grappa_format(path, forcefield, forcefield_type='openmm', charge_model='a
     energy = energy[valid_idxs]
     gradient = gradient[valid_idxs]
     xyz = xyz[valid_idxs]
+    mol_id = smiles
 
     ref_forcefield = forcefield
 
@@ -52,31 +54,29 @@ def to_grappa_format(path, forcefield, forcefield_type='openmm', charge_model='a
         topology = openmm_utils.topology_from_pdb(pdbstring)
         ff = openmm_utils.get_openmm_forcefield(ref_forcefield)
         system = ff.createSystem(topology)
-        mol_id = smiles
 
-    elif forcefield_type == 'openff' or forcefield_type == 'openmmforcefields':
-        openff_mol = openff_utils.mol_from_pdb(pdbstring)
-        mol_id = sequence
-        system, topology, _ = openff_utils.get_openmm_system(mapped_smiles=None, openff_forcefield=ref_forcefield, openff_mol=openff_mol)
+    elif forcefield_type == 'openff' or forcefield_type == 'openmmforcefields': 
+        system, topology, _ = openff_utils.get_openmm_system(mapped_smiles=mapped_smiles, openff_forcefield=ref_forcefield)
     else:
         raise ValueError(f"forcefield_type must be either openmm, openff or openmmforcefields but is {forcefield_type}")
 
     # create moldata object from the system (calculate the parameters, nonbonded forces and create reference energies and gradients from that)
     moldata = MolData.from_openmm_system(openmm_system=system, openmm_topology=topology, xyz=xyz, gradient=gradient, energy=energy, mol_id=mol_id, pdb=pdbstring, sequence=sequence, allow_nan_params=True, charge_model=charge_model, ff_name=ref_forcefield, smiles=smiles, mapped_smiles=mapped_smiles)
 
-    openmm_gradients = moldata.ff_gradient[ref_forcefield]
+    openmm_gradients = moldata.ff_gradient[ref_forcefield]["total"]
 
     # calculate the crmse:
     crmse = np.sqrt(np.mean((openmm_gradients-gradient)**2))
-    if crmse > 15:
-        print(f"Warning: crmse between {forcefield} and QM is {round(crmse, 1)} for {path.stem}, std of gradients is {round(np.std(gradient), 1)}")
+
+    if crmse > crmse_limit:
+        print(f"Warning: crmse between {forcefield} and QM is {round(crmse, 3)} for {path.stem}, std of gradients is {round(np.std(gradient), 1)}")
 
     moldata.save(target_dir/(path.stem+'.npz'))
 
     return
 
 
-def convert_dataset(path, forcefield, forcefield_type='openmm', charge_model='classical', target_dir=None):
+def convert_dataset(path, forcefield, forcefield_type='openmm', charge_model='classical', target_dir=None, crmse_limit=15, skip_errs=False):
     """
     Converts the psi4_energies.npy and psi4_forces.npy files in the given folder to a format that can be read by grappa. 
     """
@@ -88,15 +88,20 @@ def convert_dataset(path, forcefield, forcefield_type='openmm', charge_model='cl
         target_dir = Path(target_dir)
     target_dir.mkdir(parents=True, exist_ok=True)
 
-    print()
-    for i, subdir in enumerate(path.iterdir()):
-        print(f"Processing {i+1}: {subdir.stem}      ", end="\r")
+    print(f"\nConverting dataset {path}\nto grappa format {target_dir}\n")
+
+    paths = list(p for p in path.iterdir() if p.is_dir())
+    for i, subdir in enumerate(tqdm(paths, desc="Converting")):
         try:
             if subdir.is_dir():
-                to_grappa_format(subdir, forcefield, forcefield_type, charge_model, target_dir)
+                to_grappa_format(subdir, forcefield, forcefield_type, charge_model, target_dir, crmse_limit=crmse_limit)
         except Exception as e:
             print()
-            raise e
+            if skip_errs:
+                print(f"Error in {subdir}: {e}")
+                continue
+            else:
+                raise e
 
     print()
 
@@ -121,6 +126,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--charge_model", "-cm", type=str, default="amber99", help="Charge model of the underlying forcefield. Available: amber99, charmm, am1BCC"
     )
+    parser.add_argument(
+        "--crmse_limit", "-crmse", type=float, default=15, help="Print warnings if the crmse between the forcefield and QM is higher than this limit. Unit: kcal/mol/Angstrom."
+    )
+    parser.add_argument(
+        "--skip_errs", action="store_true", help="Skip errors during conversion."
+    )
     args = parser.parse_args()
 
     source_path = Path(args.source_path)
@@ -129,4 +140,4 @@ if __name__ == "__main__":
     forcefield_type = args.forcefield_type
     charge_model = args.charge_model
 
-    convert_dataset(source_path, forcefield, forcefield_type, charge_model, target_dir)
+    convert_dataset(source_path, forcefield, forcefield_type, charge_model, target_dir, crmse_limit=args.crmse_limit, skip_errs=args.skip_errs)
