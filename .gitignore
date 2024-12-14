@@ -49,3 +49,21 @@ __pycache__/
 psi_scratch/
 psi.**
 
+## tutorial files
+# Ignore everything in the tutorial directory
+tutorial/*
+
+# Exclude the specific directories
+!tutorial/pdbs/
+!tutorial/tutorial-QM-input/
+
+# Exclude the specific file
+!tutorial/create_grappa_dataset.ipynb
+
+# Ensure contents of the allowed directories are tracked
+tutorial/pdbs/*
+tutorial/tutorial-QM-input/*
+
+# Re-include all files in the allowed directories
+!tutorial/pdbs/**
+!tutorial/tutorial-QM-input/**
