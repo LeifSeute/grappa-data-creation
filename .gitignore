@@ -67,6 +67,6 @@ tutorial/pdbs/*
 tutorial/tutorial-QM-input/*
 
 # Re-include all files in the allowed directories
-!tutorial/amber99sb-idln.ff/**
+!tutorial/amber99sb-ildn.ff/**
 !tutorial/pdbs/**
 !tutorial/tutorial-QM-input/**
