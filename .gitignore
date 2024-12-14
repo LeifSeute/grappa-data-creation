@@ -54,6 +54,7 @@ psi.**
 tutorial/*
 
 # Exclude the specific directories
+!tutorial/amber99sb-ildn.ff/
 !tutorial/pdbs/
 !tutorial/tutorial-QM-input/
 
@@ -61,9 +62,11 @@ tutorial/*
 !tutorial/create_grappa_dataset.ipynb
 
 # Ensure contents of the allowed directories are tracked
+tutorial/amber99sb-ildn.ff/*
 tutorial/pdbs/*
 tutorial/tutorial-QM-input/*
 
 # Re-include all files in the allowed directories
+!tutorial/amber99sb-idln.ff/**
 !tutorial/pdbs/**
 !tutorial/tutorial-QM-input/**
