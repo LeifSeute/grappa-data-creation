@@ -55,7 +55,7 @@ tutorial/*
 
 # Exclude the specific directories
 !tutorial/amber99sb-ildn.ff/
-!tutorial/conda_environments/
+!tutorial/conda-environments/
 !tutorial/pdbs/
 !tutorial/tutorial-QM-input/
 
@@ -64,12 +64,12 @@ tutorial/*
 
 # Ensure contents of the allowed directories are tracked
 tutorial/amber99sb-ildn.ff/*
-tutorial/conda_environments/*
+tutorial/conda-environments/*
 tutorial/pdbs/*
 tutorial/tutorial-QM-input/*
 
 # Re-include all files in the allowed directories
 !tutorial/amber99sb-ildn.ff/**
-!tutorial/conda_environments/**
+!tutorial/conda-environments/**
 !tutorial/pdbs/**
 !tutorial/tutorial-QM-input/**
