@@ -1,12 +1,14 @@
 import openmm as mm
 from openmm import app
+from openmm.app import PME, ForceField, GromacsGroFile, GromacsTopFile
+from openmm.unit import nanometer
 import numpy as np
 from utils import ProgressReporter, Logger
-from grappa.utils.openmm_utils import get_openmm_forcefield 
+from grappa.utils.openmm_utils import get_openmm_forcefield
 
 from pathlib import Path
 
-def generate_states(pdb_folder, n_states=10, temperature=300, forcefield='amber99sbildn', plot=False, between_steps=50000, t_max=1000):
+def generate_states(pdb_folder, n_states=10, temperature=300, forcefield='amber99sbildn', plot=False, gmx_topology=False, between_steps=50000, t_max=1000):
     '''
     Generates files 'atomic_numbers.npy', 'positions.npy', 'openmm_energies.npy', 'openmm_forces.npy' and 'charge.npy' in the given pdb_folder.
     Units are angstrom, kcal/mol and elem charge.
@@ -20,16 +22,34 @@ def generate_states(pdb_folder, n_states=10, temperature=300, forcefield='amber9
     log(f"Generating states in {pdb_folder}")
 
     # Load the PDB file
-    pdb = app.PDBFile(str(Path(pdb_folder)/Path('pep.pdb')))
+    if gmx_topology:
+        # Use GROMACS topology to build OpenMM system and topology, get xyz from gro file
+        pdb_folder = Path(pdb_folder)
+        gro = GromacsGroFile((pdb_folder / 'pep.gro').as_posix())
+        gmx_top = GromacsTopFile((pdb_folder / 'pep.top').as_posix(),periodicBoxVectors=gro.getPeriodicBoxVectors())
+
+        system = gmx_top.createSystem(nonbondedMethod=PME,constraints=None)
+        topology = gmx_top.topology
+        initial_positions=gro.positions
+
+        integrator = mm.LangevinIntegrator(500, 1.0, 0.001)
+        simulation = app.Simulation(topology, system, integrator) # 0.001 ps time step
+        simulation.context.setPositions(initial_positions)
+    
+    else:
+        # Use OpenMM Force Field to build system
+        pdb = app.PDBFile(str(Path(pdb_folder)/Path('pep.pdb')))
 
 
-    # Setup OpenMM system
-    system = forcefield.createSystem(pdb.topology, nonbondedMethod=app.NoCutoff, constraints=None, removeCMMotion=False)
-    integrator = mm.LangevinIntegrator(500, 1.0, 0.001)
-    simulation = app.Simulation(pdb.topology, system, integrator) # 0.001 ps time step
-    simulation.context.setPositions(pdb.positions)
+        # Setup OpenMM system
+        system = forcefield.createSystem(pdb.topology, nonbondedMethod=app.NoCutoff, constraints=None, removeCMMotion=False)
+        integrator = mm.LangevinIntegrator(500, 1.0, 0.001)
+        simulation = app.Simulation(pdb.topology, system, integrator) # 0.001 ps time step
+        simulation.context.setPositions(pdb.positions)
+        topology = pdb.topology
 
     total_steps = n_states * between_steps + n_states * (between_steps//2)
+
     if plot:
         total_steps += 100
         
@@ -46,7 +66,7 @@ def generate_states(pdb_folder, n_states=10, temperature=300, forcefield='amber9
     openmm_energies = []
     openmm_forces = []
     positions = []
-    atomic_numbers = [atom.element.atomic_number for atom in pdb.topology.atoms()]
+    atomic_numbers = [atom.element.atomic_number for atom in topology.atoms()]
 
     # Sampling states with OpenMM and calculating energies and forces
     for _ in range(n_states):
@@ -106,7 +126,7 @@ def generate_states(pdb_folder, n_states=10, temperature=300, forcefield='amber9
 
 
 
-def generate_all_states(folder, n_states=10, temperature=300, plot=False, between_steps=50000, forcefield='amber99sbildn', t_max=1000):
+def generate_all_states(folder, n_states=10, temperature=300, plot=False, gmx_topology=False, between_steps=50000, forcefield='amber99sbildn', t_max=1000):
 
     from pathlib import Path
     for i, pdb_folder in enumerate(Path(folder).iterdir()):
@@ -114,7 +134,7 @@ def generate_all_states(folder, n_states=10, temperature=300, plot=False, betwee
             log = Logger(Path(folder), print_to_screen=True)
             log(f"generating states for {i}")
             try:
-                generate_states(pdb_folder, n_states=n_states, temperature=temperature, plot=plot, between_steps=between_steps, forcefield=forcefield, t_max=t_max)
+                generate_states(pdb_folder, n_states=n_states, temperature=temperature, plot=plot, gmx_topology=gmx_topology, between_steps=between_steps, forcefield=forcefield, t_max=t_max)
             except Exception as e:
                 log("-----------------------------------")
                 log(f"failed to generate states for {i} in {pdb_folder.stem}:{type(e)}:\n{e}")
@@ -128,10 +148,11 @@ if __name__ == "__main__":
     parser.add_argument('--n_states', '-n', type=int, help='The number of states to generate.', default=10)
     parser.add_argument('--temperature', '-t', type=int, help='The temperature to use for the simulation.', default=300)
     parser.add_argument('--plot', '-p', action='store_true', help='Whether to plot the sampling temperatures and potential energies.')
+    parser.add_argument('--gmx_topology', action='store_true', help='Use GROMACS topologies for OpenMM system creation.')
     parser.add_argument('--between_steps', '-b', type=int, help='The number of steps to take between the sampling steps.', default=50000)
     parser.add_argument('--forcefield', '-ff', type=str, default='amber99sbildn', help='The forcefield to use in the MD simulation for state sampling. Will be intput to grappas grappa.utils.openmm_utils.get_openmm_forcefield. Recommended: amber99sbildn/amber99sbildn*.')
     parser.add_argument('--t_max', '-tm', type=int, help='The temperature to use for the first half of the between_steps to get out of local minima.', default=1000)
 
     args = parser.parse_args()
 
-    generate_all_states(args.folder, n_states=args.n_states, temperature=args.temperature, plot=args.plot, between_steps=args.between_steps, forcefield=args.forcefield)
+    generate_all_states(args.folder, n_states=args.n_states, temperature=args.temperature, plot=args.plot, gmx_topology=args.gmx_topology, between_steps=args.between_steps, forcefield=args.forcefield)
