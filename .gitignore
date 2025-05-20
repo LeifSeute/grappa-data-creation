@@ -73,3 +73,5 @@ tutorial/tutorial-QM-input/*
 !tutorial/conda-environments/**
 !tutorial/pdbs/**
 !tutorial/tutorial-QM-input/**
+
+3bpa-evaluation/3BPA_dataset
