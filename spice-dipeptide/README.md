@@ -1,0 +1,3 @@
+Having a dataset of mapped smiles strings of all dipeptides and a set of pdbfiles for all dipeptides, we aim to match each entry of the SPICE dataset to a corresponding pdb file and find the corresponding atom order, so that we can permute the order of the SPICE entry atoms such that they match the order of the atoms in the pdb file. 
+
+For obtaining the pdb files, run 'get_pdbs.py', for loading the spice dipeptide dataset, run 'process_hdf5.py'. Then, match the graphs with 'match_graphs.py', which creates a set of npz files with the final dataset, which is essentially SPICE with permuted atoms and with a pdb file attached as string.
